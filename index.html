@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Notepad</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="terminal-header">
+        <div class="window-controls">
+            <div class="window-btn btn-close" onclick="app.closeWindow()"></div>
+            <div class="window-btn btn-minimize" onclick="app.minimizeWindow()"></div>
+            <div class="window-btn btn-maximize" onclick="app.maximizeWindow()"></div>
+        </div>
+        <div class="terminal-title">
+            <span>⬢</span> terminal-notepad — ~
+        </div>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator"></div>
+                <span>connected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">Explorer</div>
+            <div class="file-list" id="fileList"></div>
+            <button class="new-file-btn" onclick="app.newFile()">
+                <span>+</span> New File
+            </button>
+        </div>
+
+        <div class="editor-area">
+            <div class="editor-tabs" id="editorTabs"></div>
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea class="editor" id="editor" spellcheck="false" placeholder=""></textarea>
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-logo">⌘</div>
+                    <div class="welcome-text">
+                        <p>Terminal Notepad v1.0</p>
+                        <p style="margin-top: 10px; font-size: 12px;">
+                            Press <span class="key">Ctrl+N</span> to create a new file<br>
+                            Press <span class="key">Ctrl+O</span> to open command palette<br>
+                            Press <span class="key">Ctrl+S</span> to save
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="bottom-left">
+            <span class="mode-indicator">-- NORMAL --</span>
+            <span id="cursorPos">Ln 1, Col 1</span>
+        </div>
+        <div class="bottom-right">
+            <span id="fileType">Plain Text</span>
+            <span id="encoding">UTF-8</span>
+            <span id="fileSize">0 bytes</span>
+        </div>
+    </div>
+
+    <div class="command-palette" id="commandPalette">
+        <input type="text" class="command-input" id="commandInput" placeholder="Type a command...">
+        <div class="command-hint">
+            <span>↑↓</span> navigate <span>enter</span> select <span>esc</span> close
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
