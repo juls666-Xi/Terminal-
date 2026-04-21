@@ -121,6 +121,7 @@ class LinuxTerminal {
   cat <file>      - Display file contents
   ls              - List all files
   rm <file>       - Delete a file
+  neofetch        - Display system information
   clear           - Clear terminal screen
   pwd             - Show current directory
   echo <text>     - Print text
@@ -128,6 +129,10 @@ class LinuxTerminal {
   whoami          - Show current user
   save            - Save current file
   exit            - Close editor`);
+                break;
+
+            case 'neofetch':
+                this.printNeofetch();
                 break;
 
             case 'nano':
@@ -223,6 +228,104 @@ class LinuxTerminal {
         }
 
         this.scrollToBottom();
+    }
+
+    printNeofetch() {
+        const container = document.createElement('div');
+        container.className = 'neofetch-container';
+
+        // Fedora logo ASCII art (block style matching the photo)
+        const asciiArt = `         \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593
+       \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593\u2593
+      \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593\u2593
+     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593\u2593
+    \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593\u2593
+   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593\u2593
+  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2593
+  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+ \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+ \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+ \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+    \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+      \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+       \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588
+         \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588`;
+
+        const asciiDiv = document.createElement('div');
+        asciiDiv.className = 'neofetch-ascii';
+        asciiDiv.textContent = asciiArt;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'neofetch-info';
+
+        // Host line: ilham@fedora
+        const hostLine = document.createElement('div');
+        hostLine.className = 'neofetch-line neofetch-host';
+        hostLine.innerHTML = `ilham<span class="at">@</span><span class="host-name">fedora</span>`;
+        infoDiv.appendChild(hostLine);
+
+        // Separator line (dashes matching photo)
+        const sepLine = document.createElement('div');
+        sepLine.className = 'neofetch-line';
+        sepLine.innerHTML = '<span class="neofetch-value">---------------------</span>';
+        infoDiv.appendChild(sepLine);
+
+        // System info lines matching the photo exactly
+        const infoLines = [
+            { label: 'OS', value: 'Fedora Linux 40 (Workstation Edition) x86_64' },
+            { label: 'Host', value: '80M-WXX9 M1010' },
+            { label: 'Kernel', value: '6.10.12-200.fc40.x86_64' },
+            { label: 'Uptime', value: '36 mins' },
+            { label: 'Packages', value: '2546 (rpm)' },
+            { label: 'Shell', value: 'zsh 5.9' },
+            { label: 'Resolution', value: '1920x1080' },
+            { label: 'DE', value: 'Hyprland' },
+            { label: 'WM', value: 'sway' },
+            { label: 'Theme', value: 'Kali-Dark [GTK2/3]' },
+            { label: 'Icons', value: 'Flat-Remix-Blue-Dark [GTK2/3]' },
+            { label: 'Terminal', value: 'kitty' },
+            { label: 'CPU', value: 'AMD Ryzen 7 5700U with Radeon Graphics (16) @ 4.372GHz' },
+            { label: 'GPU', value: 'AMD ATI 03:00.0 Lucienne' },
+            { label: 'Memory', value: '1653MiB / 15312MiB' },
+        ];
+
+        infoLines.forEach(item => {
+            const line = document.createElement('div');
+            line.className = 'neofetch-line';
+            line.innerHTML = `<span class="neofetch-label">${item.label}:</span> <span class="neofetch-value">${item.value}</span>`;
+            infoDiv.appendChild(line);
+        });
+
+        // Color palette blocks
+        const colorsDiv = document.createElement('div');
+        colorsDiv.className = 'neofetch-colors';
+
+        const colorPalette = [
+            '#3b3b3b', '#cc0000', '#4e9a06', '#c4a000',
+            '#3465a4', '#75507b', '#06989a', '#d3d7cf',
+            '#555753', '#ef2929', '#8ae234', '#fce94f',
+            '#729fcf', '#ad7fa8', '#34e2e2', '#eeeeec'
+        ];
+
+        colorPalette.forEach(color => {
+            const block = document.createElement('span');
+            block.className = 'neofetch-color-block';
+            block.style.backgroundColor = color;
+            colorsDiv.appendChild(block);
+        });
+
+        infoDiv.appendChild(colorsDiv);
+
+        container.appendChild(asciiDiv);
+        container.appendChild(infoDiv);
+
+        // Insert before the command line
+        const commandLine = this.outputArea.lastElementChild;
+        this.outputArea.insertBefore(container, commandLine);
     }
 
     printCommand(cmd) {
@@ -423,7 +526,7 @@ class LinuxTerminal {
 
     autocomplete() {
         const val = this.commandInput.value;
-        const commands = ['nano', 'cat', 'ls', 'rm', 'clear', 'pwd', 'echo', 'date', 'whoami', 'save', 'exit', 'help', 'touch', 'cp', 'mv'];
+        const commands = ['nano', 'cat', 'ls', 'rm', 'clear', 'pwd', 'echo', 'date', 'whoami', 'save', 'exit', 'help', 'touch', 'cp', 'mv', 'neofetch'];
         const files = Object.keys(this.files);
 
         const matches = [...commands, ...files].filter(c => c.startsWith(val));

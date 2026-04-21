@@ -1,64 +1,414 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notepad</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="terminal-header">
-        <div class="header-left">
-            <span class="user-info">user@linux<span class="hostname">:~</span></span>
-        </div>
-        <div class="header-right">
-            <span id="clock"></span>
-            <span id="fileCount">0 files</span>
-        </div>
-    </div>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="sidebar-title">~/notes</div>
-            <ul class="file-list" id="fileList"></ul>
-        </div>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        <div class="editor-container">
-            <div class="editor-area">
-                <div class="line-numbers" id="lineNumbers">1</div>
-                <textarea class="editor" id="editor" spellcheck="false"></textarea>
-                <div class="welcome-msg" id="welcomeMsg">
-                    <h1>Linux Terminal Notepad</h1>
-                    <p>Type <span class="cmd">help</span> for available commands</p>
-                    <p><span class="cmd">nano</span> filename - create/edit file</p>
-                    <p><span class="cmd">cat</span> filename - print file contents</p>
-                    <p><span class="cmd">ls</span> - list files</p>
-                    <p><span class="cmd">rm</span> filename - delete file</p>
-                </div>
-            </div>
+:root {
+    --bg-color: #000000;
+    --text-color: #00ff00;
+    --text-dim: #008800;
+    --accent: #00ff00;
+    --cursor: #00ff00;
+    --selection: #003300;
+}
 
-            <div class="output-area" id="outputArea">
-                <div class="output-line">Linux Terminal Notepad v2.0</div>
-                <div class="output-line">Type 'help' for available commands</div>
-                <div class="command-line">
-                    <span class="prompt">user@notes:~$</span>
-                    <input type="text" class="command-input" id="commandInput" autofocus autocomplete="off" spellcheck="false">
-                </div>
-            </div>
-        </div>
-    </div>
+body {
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
 
-    <div class="status-bar">
-        <div class="status-left">
-            <span id="cursorPos">Ln 1, Col 1</span>
-            <span id="fileSize">0 bytes</span>
-        </div>
-        <div class="status-right">
-            <span id="mode">INSERT</span>
-            <span id="encoding">UTF-8</span>
-        </div>
-    </div>
+/* CRT effects */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.3),
+        rgba(0, 0, 0, 0.3) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 1000;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent 50%, rgba(0, 20, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 999;
+}
+
+.terminal-header {
+    padding: 8px 15px;
+    border-bottom: 1px solid var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 20, 0, 0.5);
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-info {
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.user-info .hostname {
+    color: var(--text-dim);
+}
+
+.header-right {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.main-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 200px;
+    border-right: 1px solid var(--text-dim);
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+.sidebar-title {
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--text-dim);
+}
+
+.file-list {
+    list-style: none;
+}
+
+.file-item {
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-item:hover {
+    background: var(--selection);
+}
+
+.file-item.active {
+    background: var(--selection);
+    color: var(--text-color);
+}
+
+.file-item .unsaved {
+    color: var(--text-color);
+    font-size: 10px;
+}
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.editor-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.line-numbers {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50px;
+    height: 100%;
+    padding: 10px 5px;
+    text-align: right;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.5;
+    border-right: 1px solid var(--text-dim);
+    user-select: none;
+    overflow: hidden;
+}
+
+.editor {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px 10px 10px 60px;
+    resize: none;
+    white-space: pre;
+    overflow: auto;
+    tab-size: 4;
+}
+
+.editor::selection {
+    background: var(--selection);
+    color: var(--text-color);
+}
+
+.editor:focus {
+    outline: none;
+}
+
+/* Scrollbar */
+.editor::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.output-area::-webkit-scrollbar {
+    width: 8px;
+    background: var(--bg-color);
+}
+
+.editor::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb,
+.output-area::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+}
+
+.output-area {
+    height: 200px;
+    border-top: 1px solid var(--text-dim);
+    background: rgba(0, 10, 0, 0.8);
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.output-line {
+    margin: 2px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.output-line.command {
+    color: var(--text-color);
+}
+
+.output-line.output {
+    color: var(--text-dim);
+}
+
+.output-line.error {
+    color: #ff0000;
+}
+
+.output-line.success {
+    color: var(--text-color);
+}
+
+.command-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.prompt {
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.command-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 13px;
+    caret-color: var(--cursor);
+}
+
+.command-input::selection {
+    background: var(--selection);
+}
+
+.status-bar {
+    padding: 5px 15px;
+    border-top: 1px solid var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    z-index: 10;
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.welcome-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--text-dim);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.welcome-msg.hidden {
+    display: none;
+}
+
+.welcome-msg h1 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.welcome-msg p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.welcome-text .key {
+    color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Neofetch styles */
+.neofetch-container {
+    display: flex;
+    gap: 20px;
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.neofetch-ascii {
+    color: #5b8dd9;
+    white-space: pre;
+    line-height: 1.35;
+    font-size: 12px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding-top: 2px;
+}
+
+.neofetch-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.neofetch-line {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.neofetch-host {
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.neofetch-host .at {
+    color: #5b8dd9;
+}
+
+.neofetch-host .host-name {
+    color: #5b8dd9;
+    font-weight: bold;
+}
+
+.neofetch-label {
+    color: #5b8dd9;
+    font-weight: bold;
+}
+
+.neofetch-value {
+    color: #cccccc;
+}
+
+.neofetch-colors {
+    display: flex;
+    gap: 2px;
+    margin-top: 6px;
+}
+
+.neofetch-color-block {
+    width: 14px;
+    height: 22px;
+    display: inline-block;
+}
+
+/* Syntax highlighting simulation */
+.highlight-keyword { color: var(--accent-red); }
+.highlight-string { color: var(--accent-green); }
+.highlight-comment { color: var(--text-secondary); font-style: italic; }
+.highlight-function { color: var(--accent-yellow); }
+.highlight-number { color: var(--accent-purple); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        left: -250px;
+        height: 100%;
+        z-index: 50;
+        transition: left 0.3s;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .line-numbers {
+        width: 40px;
+        font-size: 11px;
+    }
+
+    .editor {
+        padding-left: 50px;
+        font-size: 12px;
+    }
+}
