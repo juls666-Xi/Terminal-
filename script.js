@@ -10,6 +10,7 @@ class LinuxTerminal {
         this.lineNumbers = document.getElementById('lineNumbers');
         this.fileList = document.getElementById('fileList');
         this.outputArea = document.getElementById('outputArea');
+        this.commandLine = document.querySelector('.command-line');
         this.commandInput = document.getElementById('commandInput');
         this.welcomeMsg = document.getElementById('welcomeMsg');
 
@@ -19,6 +20,9 @@ class LinuxTerminal {
     init() {
         this.setupEventListeners();
         this.updateClock();
+        this.renderFileList();
+        this.updateStatus();
+        this.updateLineNumbers();
         setInterval(() => this.updateClock(), 1000);
         this.commandInput.focus();
     }
@@ -26,13 +30,13 @@ class LinuxTerminal {
     setupEventListeners() {
         // Editor events
         this.editor.addEventListener('input', () => {
-            this.updateLineNumbers();
-            this.updateStatus();
             if (this.currentFile) {
                 this.files[this.currentFile].content = this.editor.value;
                 this.files[this.currentFile].modified = true;
                 this.renderFileList();
             }
+            this.updateLineNumbers();
+            this.updateStatus();
         });
 
         this.editor.addEventListener('scroll', () => {
@@ -83,10 +87,11 @@ class LinuxTerminal {
     }
 
     updateLineNumbers() {
-        const lines = this.editor.value.split('\n').length;
-        this.lineNumbers.innerHTML = Array.from({length: lines}, (_, i) =>
-            `<span style="${this.currentFile && this.files[this.currentFile]?.content.split('\n')[i]?.startsWith('#') ? 'color: var(--text-dim)' : ''}">${i + 1}</span>`
-        ).join('<br>');
+        const lines = this.editor.value.split('\n');
+        this.lineNumbers.innerHTML = lines.map((line, i) => {
+            const isComment = line.trim().startsWith('#');
+            return `<span style="${isComment ? 'color: var(--text-dim)' : ''}">${i + 1}</span>`;
+        }).join('<br>');
     }
 
     updateStatus() {
@@ -323,37 +328,35 @@ class LinuxTerminal {
         container.appendChild(asciiDiv);
         container.appendChild(infoDiv);
 
-        // Insert before the command line
-        const commandLine = this.outputArea.lastElementChild;
-        this.outputArea.insertBefore(container, commandLine);
+        this.outputArea.insertBefore(container, this.commandLine);
     }
 
     printCommand(cmd) {
         const line = document.createElement('div');
         line.className = 'output-line command';
         line.innerHTML = `<span class="prompt">user@linux:~$</span> ${this.escapeHtml(cmd)}`;
-        this.outputArea.insertBefore(line, this.outputArea.lastElementChild);
+        this.outputArea.insertBefore(line, this.commandLine);
     }
 
     printOutput(text) {
         const line = document.createElement('div');
         line.className = 'output-line output';
         line.textContent = text;
-        this.outputArea.insertBefore(line, this.outputArea.lastElementChild);
+        this.outputArea.insertBefore(line, this.commandLine);
     }
 
     printError(text) {
         const line = document.createElement('div');
         line.className = 'output-line error';
         line.textContent = text;
-        this.outputArea.insertBefore(line, this.outputArea.lastElementChild);
+        this.outputArea.insertBefore(line, this.commandLine);
     }
 
     printSuccess(text) {
         const line = document.createElement('div');
         line.className = 'output-line success';
         line.textContent = text;
-        this.outputArea.insertBefore(line, this.outputArea.lastElementChild);
+        this.outputArea.insertBefore(line, this.commandLine);
     }
 
     escapeHtml(text) {
@@ -506,9 +509,8 @@ class LinuxTerminal {
     }
 
     clearScreen() {
-        const commandLine = this.outputArea.lastElementChild;
         this.outputArea.innerHTML = '';
-        this.outputArea.appendChild(commandLine);
+        this.outputArea.appendChild(this.commandLine);
     }
 
     exitEditor() {
@@ -521,6 +523,8 @@ class LinuxTerminal {
         this.editor.value = '';
         this.welcomeMsg.classList.remove('hidden');
         document.getElementById('mode').textContent = 'COMMAND';
+        this.updateLineNumbers();
+        this.updateStatus();
         this.printSuccess('Editor closed. Use "nano <file>" to edit.');
     }
 
